@@ -1,0 +1,28 @@
+{
+  "tests": [
+    {
+      "name": "Test chat with messages",
+      "method": "POST",
+      "body": {
+        "messages": [
+          {"role": "user", "content": "Привет, мне тревожно"}
+        ]
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "message": "string",
+        "emotion": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Test empty messages",
+      "method": "POST",
+      "body": {
+        "messages": []
+      },
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

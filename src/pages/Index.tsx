@@ -63,23 +63,46 @@ const Index = () => {
     setInputMessage('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const responses = [
-        'Я понимаю, что вы чувствуете. Это абсолютно нормальная реакция на сложную ситуацию. Давайте попробуем разобраться вместе.',
-        'Спасибо, что поделились этим со мной. Ваши переживания важны. Что вы чувствуете прямо сейчас?',
-        'Я слышу вас. Такие эмоции могут быть очень сильными. Помните, что вы не одиноки в этом.',
-        'Это смелый шаг — признать свои чувства. Давайте найдем способы, которые помогут вам справиться.',
-      ];
+    try {
+      const chatHistory = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content
+      }));
+
+      const response = await fetch('https://functions.poehali.dev/7ee1612c-e3d1-4ff5-841b-ce1e4253e934', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: chatHistory
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при получении ответа');
+      }
 
       const aiMessage: Message = {
         role: 'assistant',
-        content: responses[Math.floor(Math.random() * responses.length)],
-        emotion: 'positive',
+        content: data.message,
+        emotion: data.emotion,
       };
 
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error:', error);
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: 'Извините, произошла ошибка. Пожалуйста, проверьте подключение к интернету или попробуйте позже.',
+        emotion: 'neutral',
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1500);
+    }
   };
 
   return (
